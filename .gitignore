@@ -1,0 +1,10 @@
+# Laravel .gitignore
+
+# Ignore sensitive files and credentials
+/.env
+/.env.backup
+/.env.*
+
+# Ignore the vendor directory as Composer dependencies are installed via composer install
+/vendor
+/node_modules
