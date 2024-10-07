@@ -129,8 +129,7 @@
             box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
         }
     </style>
-    <script async src="https://cse.google.com/cse.js?cx=001186106664964141629:y-hpcl-fl3o">
-    </script>
+    <script async src="https://cse.google.com/cse.js?cx=d52840cb5d894413a:y-hpcl-fl3o"></script>
 </head>
 <body>
 
@@ -140,12 +139,12 @@
     </header>
 
     <div class="search-bar">
-        <input type="text" placeholder="Search for Local Shoppers">
-        <button>Search</button>
+        <input type="text" id="searchInput" placeholder="Search for Local Shoppers">
+        <button id="searchButton">Search</button>
     </div>
 
     <div class="location-info">
-        <p>Order Products and Services from Businesses located in <div id="location-status"></div></p>
+        <p>Order Products and Services from Businesses located in <span id="location-status"></span></p>
         <a href="#">Change Location</a>
     </div>
 
@@ -157,9 +156,6 @@
             <!-- First Dropdown (Main Category) -->
             <select id="main-category">
                 <option value="">Select Main Category</option>
-                <option value="food-drink">Food & Drink</option>
-                <option value="auto">Auto</option>
-                <option value="fashion">Fashion</option>
             </select>
 
             <!-- Second Dropdown (Subcategory) -->
@@ -184,40 +180,43 @@
 
 <!-- JavaScript for dynamic loading -->
 <script>
-    // Define subcategories and third-level categories
-    const categories = {
-        "food-drink": {
-            title: "Food & Drink",
-            subcategories: {
-                "restaurants": ["Chinese Food", "Italian Food", "Indian Food", "Mexican Food"],
-                "cafes": [],
-                "bars": []
-            }
-        },
-        "auto": {
-            title: "Auto",
-            subcategories: {
-                "car-dealers": ["New Cars", "Used Cars"],
-                "repairs": ["Mechanics", "Tire Shops"]
-            }
-        },
-        "fashion": {
-            title: "Fashion",
-            subcategories: {
-                "clothing": ["Men's Clothing", "Women's Clothing"],
-                "accessories": ["Jewelry", "Watches"]
-            }
-        }
-    };
+    // Initialize variables
+    let categories = '';
 
+    // Fetch categories from Laravel route
+    fetch('/generate-array')
+        .then(response => response.json())
+        .then(data => {
+            categories = data; // Store fetched categories
+            console.log(categories);
+            populateMainCategories(); // Populate main categories after data is fetched
+        })
+        .catch(error => {
+            console.error('Error fetching categories:', error);
+        });
+
+    // DOM Elements
     const mainCategoryDropdown = document.getElementById('main-category');
     const subcategoryDropdown = document.getElementById('subcategory');
     const thirdLevelDropdown = document.getElementById('third-level-category');
 
+    // Populate main categories dropdown
+    function populateMainCategories() {
+        mainCategoryDropdown.innerHTML = '<option value="">Select Main Category</option>';
+        categories.forEach((category, index) => {
+            mainCategoryDropdown.innerHTML += `<option value="${index}">${category.title}</option>`;
+        });
+    }
+
     // Handle main category change
     mainCategoryDropdown.addEventListener('change', function () {
         const categoryKey = this.value;
-        showSubcategories(categoryKey);
+        if (categoryKey) {
+            showSubcategories(categoryKey);
+        } else {
+            subcategoryDropdown.style.display = 'none';
+            thirdLevelDropdown.style.display = 'none';
+        }
     });
 
     // Function to show subcategories in the second dropdown
@@ -232,35 +231,40 @@
             subcategoryDropdown.style.display = 'block'; // Show dropdown
             subcategoryDropdown.innerHTML = `<option value="">Select Subcategory</option>`;
 
-            for (let subcategory in category.subcategories) {
-                subcategoryDropdown.innerHTML += `<option value="${subcategory}">${subcategory.replace(/-/g, ' ')}</option>`;
-            }
+            category.subcategories.forEach((subcategory, index) => {
+                subcategoryDropdown.innerHTML += `<option value="${index}">${subcategory.title}</option>`;
+            });
 
             // Handle subcategory change
             subcategoryDropdown.addEventListener('change', function () {
                 const subcategoryKey = this.value;
-                showThirdLevelCategories(categoryKey, subcategoryKey);
+                if (subcategoryKey) {
+                    showThirdLevelCategories(categoryKey, subcategoryKey);
+                } else {
+                    thirdLevelDropdown.style.display = 'none';
+                }
             });
         }
     }
 
-    // Function to show third level categories in the third dropdown
+    // Function to show third-level categories in the third dropdown
     function showThirdLevelCategories(categoryKey, subcategoryKey) {
         thirdLevelDropdown.innerHTML = ''; // Clear the dropdown
         thirdLevelDropdown.style.display = 'none'; // Hide initially
 
         const thirdLevel = categories[categoryKey].subcategories[subcategoryKey];
-        
-        if (thirdLevel && thirdLevel.length > 0) {
+        if (thirdLevel && thirdLevel.subcategories && thirdLevel.subcategories.length > 0) {
             thirdLevelDropdown.style.display = 'block'; // Show dropdown
             thirdLevelDropdown.innerHTML = `<option value="">Select Item</option>`;
 
-            thirdLevel.forEach(item => {
+            thirdLevel.subcategories.forEach(item => {
                 thirdLevelDropdown.innerHTML += `<option value="${item}">${item}</option>`;
             });
         }
     }
+
 </script>
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -292,7 +296,7 @@
                 document.getElementById('location-status').textContent = `Location detected: ${locationName}`;
 
                 // Modify the search query to include location
-                document.getElementById('searchForm').addEventListener('submit', function(e) {
+                document.getElementById('searchButton').addEventListener('click', function(e) {
                     e.preventDefault();
                     const query = document.getElementById('searchInput').value;
                     const locationQuery = `${query} in ${locationName}`;
@@ -309,7 +313,7 @@
             document.querySelector('.gcse-search').innerHTML = '';
             
             // Dynamically load the search with the updated query
-            var cx = '001186106664964141629:y-hpcl-fl3o'; // Your search engine ID
+            var cx = 'd52840cb5d894413a:y-hpcl-fl3o'; // Your search engine ID
             var gcse = document.createElement('script');
             gcse.type = 'text/javascript';
             gcse.async = true;

@@ -10,6 +10,7 @@ use BalajiDharma\LaravelAdminCore\Data\Category\CategoryUpdateData;
 use BalajiDharma\LaravelCategory\Models\Category;
 use BalajiDharma\LaravelCategory\Models\CategoryType;
 use BalajiDharma\LaravelFormBuilder\FormBuilder;
+use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
@@ -52,14 +53,23 @@ class CategoryController extends Controller
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(CategoryCreateData $data, CategoryType $type, CategoryCreateAction $categoryCreateAction)
-    {
-        $this->authorize('adminCreate', Category::class);
+    public function store(Request $request, CategoryType $type, CategoryCreateAction $categoryCreateAction)
+    {   
+        $data = new CategoryCreateData(
+            name: $request->input('name'),
+            slug: $request->input('slug'),
+            description: $request->input('description'),
+            enabled: $request->boolean('enabled'),
+            parentId: $request->input('parent_id'), // Use parent_id from the form
+            weight: $request->input('weight')
+        );
+
         $categoryCreateAction->handle($data, $type);
 
         return redirect()->route('admin.category.type.item.index', $type->id)
             ->with('message', 'Category created successfully.');
     }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -86,11 +96,24 @@ class CategoryController extends Controller
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(CategoryUpdateData $data, CategoryType $type, Category $item, CategoryUpdateAction $categoryUpdateAction)
+    public function update(Request $request, CategoryType $type, Category $item, CategoryUpdateAction $categoryUpdateAction)
     {
         $this->authorize('adminUpdate', $item);
+
+        // Map form input to CategoryUpdateData
+        $data = new CategoryUpdateData(
+            name: $request->input('name'),
+            slug: $request->input('slug'),
+            description: $request->input('description'),
+            enabled: $request->boolean('enabled'),
+            parentId: $request->input('parent_id'), // Using parent_id from the form
+            weight: $request->input('weight')
+        );
+
+        // Handle update action
         $categoryUpdateAction->handle($data, $item);
 
+        // Redirect with success message
         return redirect()->route('admin.category.type.item.index', $type->id)
             ->with('message', 'Category updated successfully.');
     }
