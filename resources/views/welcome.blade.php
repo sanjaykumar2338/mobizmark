@@ -129,7 +129,7 @@
             box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
         }
     </style>
-    <script async src="https://cse.google.com/cse.js?cx={{\App\Models\Setting::where('user_id', auth()->id())->value('google_search_id') ?? ''}}:y-hpcl-fl3o"></script>
+    <script async src="https://cse.google.com/cse.js?cx={{ \App\Models\Setting::first()->value('google_search_id') ?? '' }}"></script>
 </head>
 <body>
 
@@ -137,15 +137,9 @@
     <header>
         <h1>Mobizmark</h1>
     </header>
-
-    <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Search for Local Shoppers">
-        <button id="searchButton">Search</button>
-    </div>
-
     <div class="location-info">
         <p>Order Products and Services from Businesses located in <span id="location-status"></span></p>
-        <a href="#">Change Location</a>
+        <a href="javascript:void(0)" id="changeLocation">Change Location</a>
     </div>
 
     <div class="main-content">
@@ -180,155 +174,182 @@
 
 <!-- JavaScript for dynamic loading -->
 <script>
-    // Initialize variables
-    let categories = '';
+// Initialize variables
+let categories = '';
+let locationName = ''; // For location change
 
-    // Fetch categories from Laravel route
-    fetch('/generate-array')
-        .then(response => response.json())
-        .then(data => {
-            categories = data; // Store fetched categories
-            console.log(categories);
-            populateMainCategories(); // Populate main categories after data is fetched
-        })
-        .catch(error => {
-            console.error('Error fetching categories:', error);
-        });
-
-    // DOM Elements
-    const mainCategoryDropdown = document.getElementById('main-category');
-    const subcategoryDropdown = document.getElementById('subcategory');
-    const thirdLevelDropdown = document.getElementById('third-level-category');
-
-    // Populate main categories dropdown
-    function populateMainCategories() {
-        mainCategoryDropdown.innerHTML = '<option value="">Select Main Category</option>';
-        categories.forEach((category, index) => {
-            mainCategoryDropdown.innerHTML += `<option value="${index}">${category.title}</option>`;
-        });
-    }
-
-    // Handle main category change
-    mainCategoryDropdown.addEventListener('change', function () {
-        const categoryKey = this.value;
-        if (categoryKey) {
-            showSubcategories(categoryKey);
-        } else {
-            subcategoryDropdown.style.display = 'none';
-            thirdLevelDropdown.style.display = 'none';
-        }
+// Fetch categories from Laravel route
+fetch('/generate-array')
+    .then(response => response.json())
+    .then(data => {
+        categories = data; // Store fetched categories
+        populateMainCategories(); // Populate main categories after data is fetched
+    })
+    .catch(error => {
+        console.error('Error fetching categories:', error);
     });
 
-    // Function to show subcategories in the second dropdown
-    function showSubcategories(categoryKey) {
-        subcategoryDropdown.innerHTML = ''; // Clear the dropdown
-        subcategoryDropdown.style.display = 'none'; // Hide initially
-        thirdLevelDropdown.style.display = 'none'; // Hide third level dropdown
-        thirdLevelDropdown.innerHTML = ''; // Clear third level options
+// DOM Elements
+const mainCategoryDropdown = document.getElementById('main-category');
+const subcategoryDropdown = document.getElementById('subcategory');
+const thirdLevelDropdown = document.getElementById('third-level-category');
+const searchInput2 = document.getElementById('gsc-i-id1');
+const searchButton2 = document.querySelector('.gsc-search-button');
 
-        const category = categories[categoryKey];
-        if (category) {
-            subcategoryDropdown.style.display = 'block'; // Show dropdown
-            subcategoryDropdown.innerHTML = `<option value="">Select Subcategory</option>`;
+// Populate main categories dropdown
+function populateMainCategories() {
+    mainCategoryDropdown.innerHTML = '<option value="">Select Main Category</option>';
+    categories.forEach((category, index) => {
+        mainCategoryDropdown.innerHTML += `<option value="${index}">${category.title}</option>`;
+    });
+}
 
-            category.subcategories.forEach((subcategory, index) => {
-                subcategoryDropdown.innerHTML += `<option value="${index}">${subcategory.title}</option>`;
-            });
-
-            // Handle subcategory change
-            subcategoryDropdown.addEventListener('change', function () {
-                const subcategoryKey = this.value;
-                if (subcategoryKey) {
-                    showThirdLevelCategories(categoryKey, subcategoryKey);
-                } else {
-                    thirdLevelDropdown.style.display = 'none';
-                }
-            });
+// Handle main category change
+mainCategoryDropdown.addEventListener('change', function () {
+    const categoryKey = this.value;
+    
+    if (categoryKey) {
+        showSubcategories(categoryKey);
+        // Only trigger search if a valid category is selected
+        if (categoryKey !== '') {
+            runGoogleSearch(); // Trigger search with the new category
         }
+    } else {
+        subcategoryDropdown.style.display = 'none';
+        thirdLevelDropdown.style.display = 'none';
     }
+});
 
-    // Function to show third-level categories in the third dropdown
-    function showThirdLevelCategories(categoryKey, subcategoryKey) {
-        thirdLevelDropdown.innerHTML = ''; // Clear the dropdown
-        thirdLevelDropdown.style.display = 'none'; // Hide initially
+// Function to show subcategories in the second dropdown
+function showSubcategories(categoryKey) {
+    subcategoryDropdown.innerHTML = ''; // Clear the dropdown
+    subcategoryDropdown.style.display = 'none'; // Hide initially
+    thirdLevelDropdown.style.display = 'none'; // Hide third level dropdown
+    thirdLevelDropdown.innerHTML = ''; // Clear third level options
 
-        const thirdLevel = categories[categoryKey].subcategories[subcategoryKey];
-        if (thirdLevel && thirdLevel.subcategories && thirdLevel.subcategories.length > 0) {
-            thirdLevelDropdown.style.display = 'block'; // Show dropdown
-            thirdLevelDropdown.innerHTML = `<option value="">Select Item</option>`;
+    const category = categories[categoryKey];
+    if (category) {
+        subcategoryDropdown.style.display = 'block'; // Show dropdown
+        subcategoryDropdown.innerHTML = `<option value="">Select Subcategory</option>`;
 
-            thirdLevel.subcategories.forEach(item => {
-                thirdLevelDropdown.innerHTML += `<option value="${item}">${item}</option>`;
-            });
-        }
-    }
+        category.subcategories.forEach((subcategory, index) => {
+            subcategoryDropdown.innerHTML += `<option value="${index}">${subcategory.title}</option>`;
+        });
 
-</script>
-
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Check if Geolocation is supported
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(success, error);
-        } else {
-            document.getElementById('location-status').textContent = 'Geolocation is not supported by this browser.';
-        }
-
-        // Success callback
-        function success(position) {
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
-            getLocationName(latitude, longitude);
-        }
-
-        // Error callback
-        function error() {
-            document.getElementById('location-status').textContent = 'Unable to retrieve your location.';
-        }
-
-        // Convert latitude and longitude to city/state/country using reverse geocoding
-        async function getLocationName(lat, lon) {
-            try {
-                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
-                const data = await response.json();
-                const locationName = data.address.city || data.address.state || data.address.country;
-                document.getElementById('location-status').textContent = `Location detected: ${locationName}`;
-
-                // Modify the search query to include location
-                document.getElementById('searchButton').addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const query = document.getElementById('searchInput').value;
-                    const locationQuery = `${query} in ${locationName}`;
-                    runGoogleSearch(locationQuery); // Run search with the location
-                });
-            } catch (error) {
-                console.error('Error retrieving location name:', error);
+        // Handle subcategory change
+        subcategoryDropdown.addEventListener('change', function () {
+            const subcategoryKey = this.value;
+            if (subcategoryKey) {
+                showThirdLevelCategories(categoryKey, subcategoryKey);
+                runGoogleSearch(); // Trigger search with the new subcategory
+            } else {
+                thirdLevelDropdown.style.display = 'none';
             }
+        });
+    }
+}
+
+// Function to show third-level categories in the third dropdown
+function showThirdLevelCategories(categoryKey, subcategoryKey) {
+    thirdLevelDropdown.innerHTML = ''; // Clear the dropdown
+    thirdLevelDropdown.style.display = 'none'; // Hide initially
+
+    const thirdLevel = categories[categoryKey].subcategories[subcategoryKey];
+    if (thirdLevel && thirdLevel.subcategories && thirdLevel.subcategories.length > 0) {
+        thirdLevelDropdown.style.display = 'block'; // Show dropdown
+        thirdLevelDropdown.innerHTML = `<option value="">Select Item</option>`;
+
+        thirdLevel.subcategories.forEach(item => {
+            thirdLevelDropdown.innerHTML += `<option value="${item}">${item}</option>`;
+        });
+
+        thirdLevelDropdown.addEventListener('change', function () {
+            const selectedItem = thirdLevelDropdown.value;
+            if (selectedItem) {
+                runGoogleSearch(); // Trigger search with the new third-level category
+            }
+        });
+    }
+}
+
+// Trigger search based on current category and location
+function runGoogleSearch() {
+    const mainCategory = mainCategoryDropdown.options[mainCategoryDropdown.selectedIndex].text;
+    const subCategory = subcategoryDropdown.options[subcategoryDropdown.selectedIndex]?.text || '';
+    const thirdCategory = thirdLevelDropdown.options[thirdLevelDropdown.selectedIndex]?.text || '';
+
+    // Build the query conditionally
+    let query = mainCategory; // Start with main category (this should always be present)
+
+    // Only append subCategory if it's not the placeholder "Select Subcategory"
+    if (subCategory !== 'Select Subcategory') {
+        query += ` ${subCategory} `;
+    }
+
+    // Only append thirdCategory if it's not the placeholder "Select Item"
+    if (thirdCategory !== 'Select Item') {
+        query += ` ${thirdCategory} `;
+    }
+
+    // Append the location if available
+    query += ` in ${locationName || ''}`.trim();
+
+    // Only perform search if a valid category is selected
+    if (mainCategory !== 'Select Main Category') {
+        // Wait for Google Custom Search input field to be available
+        const waitForSearchInput = setInterval(function () {
+            let searchInput2 = document.getElementById('gsc-i-id1');
+            let searchButton2 = document.querySelector('.gsc-search-button-v2');
+
+            if (searchInput2 && searchButton2) {
+                searchInput2.value = query;
+                searchButton2.click();
+                clearInterval(waitForSearchInput); // Stop the interval once input is available
+            }
+        }, 500); // Check every 500ms if the input is available
+    }
+}
+
+// Change location event handler
+document.getElementById('changeLocation').addEventListener('click', function() {
+    locationName = prompt("Please enter your new location:");
+    document.getElementById('location-status').textContent = `Location detected: ${locationName || 'Unknown'}`;
+    runGoogleSearch(); // Trigger search with the new location
+});
+
+// Geolocation for detecting location on load
+document.addEventListener('DOMContentLoaded', function() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(success, error);
+    } else {
+        document.getElementById('location-status').textContent = 'Geolocation is not supported by this browser.';
+    }
+
+    function success(position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        getLocationName(latitude, longitude);
+    }
+
+    function error() {
+        document.getElementById('location-status').textContent = 'Unable to retrieve your location.';
+    }
+
+    async function getLocationName(lat, lon) {
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+            const data = await response.json();
+            locationName = data.address.city || data.address.state || data.address.country;
+            document.getElementById('location-status').textContent = `Location detected: ${locationName}`;
+
+            runGoogleSearch(); // Run search with the location
+        } catch (error) {
+            console.error('Error retrieving location name:', error);
         }
+    }
+});
 
-        // Function to run Google Programmable Search with the query
-        function runGoogleSearch(query) {
-            // Clear the previous search
-            document.querySelector('.gcse-search').innerHTML = '';
-            
-            // Dynamically load the search with the updated query
-            var cx = "{{\App\Models\Setting::where('user_id', auth()->id())->value('google_search_id') ?? ''}}:y-hpcl-fl3o"; // Your search engine ID
-            var gcse = document.createElement('script');
-            gcse.type = 'text/javascript';
-            gcse.async = true;
-            gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
-            document.querySelector('.gcse-search').appendChild(gcse);
 
-            // Append the search query to the form
-            var searchQuery = document.querySelector('.gsc-input');
-            searchQuery.value = query;
-
-            // Simulate a search
-            var searchButton = document.querySelector('.gsc-search-button');
-            searchButton.click();
-        }
-    });
 </script>
 
 </body>
