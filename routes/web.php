@@ -6,9 +6,15 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Models\Category;
+use Illuminate\Support\Facades\Hash;
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::get('/createpassword', function () {
+    $pass = 'RM99k4MqZMpyl2k';
+    return Hash::make($pass);
 });
 
 Route::get('/insertindb', function () {
