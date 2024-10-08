@@ -129,7 +129,7 @@
             box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
         }
     </style>
-    <script async src="https://cse.google.com/cse.js?cx=d52840cb5d894413a:y-hpcl-fl3o"></script>
+    <script async src="https://cse.google.com/cse.js?cx={{\App\Models\Setting::where('user_id', auth()->id())->value('google_search_id') ?? ''}}:y-hpcl-fl3o"></script>
 </head>
 <body>
 
@@ -313,7 +313,7 @@
             document.querySelector('.gcse-search').innerHTML = '';
             
             // Dynamically load the search with the updated query
-            var cx = 'd52840cb5d894413a:y-hpcl-fl3o'; // Your search engine ID
+            var cx = "{{\App\Models\Setting::where('user_id', auth()->id())->value('google_search_id') ?? ''}}:y-hpcl-fl3o"; // Your search engine ID
             var gcse = document.createElement('script');
             gcse.type = 'text/javascript';
             gcse.async = true;
