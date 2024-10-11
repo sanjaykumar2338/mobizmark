@@ -12,6 +12,26 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/about-us', function () {
+    return view('aboutus');
+});
+
+Route::get('/policies', function () {
+    return view('policy');
+});
+
+Route::get('/domains', function () {
+    return view('domain');
+});
+
+Route::get('/contact', function () {
+    return view('contactus');
+});
+
+Route::get('/terms-of-use', function () {
+    return view('terms');
+});
+
 Route::get('/createpassword', function () {
     $pass = 'RM99k4MqZMpyl2k';
     return Hash::make($pass);

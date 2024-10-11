@@ -123,10 +123,15 @@
             color: white;
             padding: 10px;
             text-align: center;
-            margin-top: auto; /* This ensures footer stays at the bottom */
+            margin-top: auto;
             width: 100%;
             border-top: 2px solid #f0f0f0;
             box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        }
+        .footer a {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
         }
     </style>
     <script async src="https://cse.google.com/cse.js?cx={{ \App\Models\Setting::first()->value('google_search_id') ?? '' }}"></script>
@@ -168,7 +173,11 @@
 
     <!-- Footer -->
     <div class="footer">
-        <p>Domains | Policies | Terms | About us | Contact us</p>
+        <a href="{{ url('/domains') }}">Domains</a> | 
+        <a href="{{ url('/policies') }}">Policies</a> | 
+        <a href="{{ url('/terms-of-use') }}">Terms of Use</a> | 
+        <a href="{{ url('/about-us') }}">About Us</a> | 
+        <a href="{{ url('/contact') }}">Contact Us</a>
     </div>
 </div>
 
