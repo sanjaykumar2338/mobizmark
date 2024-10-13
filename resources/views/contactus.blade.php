@@ -105,6 +105,58 @@
             text-decoration: none;
             margin: 0 10px;
         }
+
+        /* Success Alert */
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            position: relative;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+        }
+
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        .alert-info {
+            color: #0c5460;
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+
+        .alert-warning {
+            color: #856404;
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+        }
+
+        /* Close button */
+        .alert .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: inherit;
+            font-size: 20px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        .alert .close:hover {
+            color: #000;
+        }
+
     </style>
 </head>
 <body>
@@ -121,11 +173,13 @@
             <p>If you have any questions, feedback, or inquiries, please fill out the form below, and we will get back to you as soon as possible.</p>
             
             @if (session('success'))
+                <br><br>
                 <div class="alert alert-success">
+                    <button class="close" onclick="this.parentElement.style.display='none';">&times;</button>
                     {{ session('success') }}
                 </div>
             @endif
-            
+
             <form action="/submit-contact-form" method="POST">
                 @csrf
                 <label for="first-name">First Name:</label>
