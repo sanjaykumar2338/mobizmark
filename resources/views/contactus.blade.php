@@ -114,6 +114,12 @@
         <a href="{{ url('/') }}">Mobizmark - Your Local Business Directory</a>
     </header>
 
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
     <!-- Main Content Area -->
     <div class="main-content">
         <div class="content-area">
@@ -121,6 +127,7 @@
             <p>If you have any questions, feedback, or inquiries, please fill out the form below, and we will get back to you as soon as possible.</p>
             
             <form action="/submit-contact-form" method="POST">
+                @csrf
                 <label for="first-name">First Name:</label>
                 <input type="text" id="first-name" name="first-name" required>
 

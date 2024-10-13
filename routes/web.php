@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Admin\SettingMainController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -8,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Category;
 use Illuminate\Support\Facades\Hash;
 
+Route::post('/submit-contact-form', [ContactController::class, 'submitContactForm'])->name('contact.submit');
 Route::get('/', function () {
     return view('welcome');
 });
