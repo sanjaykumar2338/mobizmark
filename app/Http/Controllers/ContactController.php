@@ -1,8 +1,10 @@
 <?php
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ContactConfirmation;
+use App\Mail\AdminNotification;  // Add the AdminNotification mail class
 
 class ContactController extends Controller
 {
@@ -19,10 +21,13 @@ class ContactController extends Controller
         // Send confirmation email to the customer
         Mail::to($validatedData['email'])->send(new ContactConfirmation($validatedData));
 
-        // Optionally, you can store the message in the database or notify admin here
+        // List of admin email addresses
+        $adminEmails = ['causestand@gmail.com', 'info@causestand.com', 'usanynj@yahoo.com', 'sk963070@gmail.com'];
+
+        // Send notification email to admins
+        Mail::to($adminEmails)->send(new AdminNotification($validatedData));
 
         // Redirect back or to a thank you page with success message
         return redirect()->back()->with('success', 'Your message has been received. We will get back to you soon.');
     }
 }
-
