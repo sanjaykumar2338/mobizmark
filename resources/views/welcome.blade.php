@@ -361,5 +361,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </script>
 
+@include('adsense')
+
 </body>
 </html>

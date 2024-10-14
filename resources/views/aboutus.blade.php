@@ -136,5 +136,7 @@
     </div>
 </div>
 
+@include('adsense')
+
 </body>
 </html>
